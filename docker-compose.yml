@@ -1,0 +1,40 @@
+services:
+  car_brand_classification:
+    build: .
+    container_name: car_brand_classification
+    ports:
+      - "${APP_PORT}:${APP_PORT}"
+    volumes:
+      - .:/project
+    env_file:
+      - .env
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [ gpu ]
+    networks:
+      - brand_classification-network
+  brand_classification_postgres:
+    image: postgres:latest
+    container_name: brand_classification_postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - ${POSTGRES_PORT}:5432
+    networks:
+      - brand_classification-network
+
+networks:
+  brand_classification-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
